@@ -1,0 +1,5 @@
+2026/04/27-17:01:16.401 cb1c Reusing MANIFEST /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/Local Storage/leveldb/MANIFEST-000001
+2026/04/27-17:01:16.404 cb1c Recovering log #3
+2026/04/27-17:01:16.404 cb1c Level-0 table #3: started
+2026/04/27-17:01:16.406 cb1c Level-0 table #3: 17642 bytes OK
+2026/04/27-17:01:16.407 cb1c Delete type=0 #3

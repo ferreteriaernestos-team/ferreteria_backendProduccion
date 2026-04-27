@@ -21,6 +21,40 @@ model caja {
   @@index([usuario_id], map: "usuario_id")
 }
 
+model categorias {
+  id          Int        @id @default(autoincrement())
+  nombre      String     @unique(map: "categorias_nombre") @db.VarChar(100)
+  descripcion String?    @db.Text
+  activo      Boolean?   @default(true)
+  created_at  DateTime?  @default(now()) @db.Timestamp(0)
+  productos   productos[]
+}
+
+model clientes {
+  id         Int       @id @default(autoincrement())
+  nombre     String    @db.VarChar(150)
+  documento  String?   @unique(map: "clientes_documento") @db.VarChar(20)
+  telefono   String?   @db.VarChar(20)
+  email      String?   @db.VarChar(100)
+  direccion  String?   @db.Text
+  activo     Boolean?  @default(true)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  ventas     ventas[]
+}
+
+model descuentos {
+  id           Int             @id @default(autoincrement())
+  nombre       String          @db.VarChar(100)
+  tipo         descuentos_tipo
+  valor        Decimal         @db.Decimal(10, 2)
+  activo       Boolean?        @default(true)
+  fecha_inicio DateTime?       @db.Timestamp(0)
+  fecha_fin    DateTime?       @db.Timestamp(0)
+  created_at   DateTime?       @default(now()) @db.Timestamp(0)
+  ventas       ventas[]
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model detalle_orden_compra {
   id              Int            @id @default(autoincrement())
@@ -120,7 +154,9 @@ model productos {
   stock                  Int                      @default(0)
   stock_minimo           Int                      @default(5)
   proveedor_id           Int?
+  categoria_id           Int?
   activo                 Boolean?                 @default(true)
+  alerta_enviada         Boolean?                 @default(false)
   created_at             DateTime?                @default(now()) @db.Timestamp(0)
   updated_at             DateTime?                @default(now()) @db.Timestamp(0)
   detalle_orden_compra   detalle_orden_compra[]
@@ -128,9 +164,11 @@ model productos {
   ia_predicciones        ia_predicciones[]
   movimientos_inventario movimientos_inventario[]
   proveedores            proveedores?             @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "productos_ibfk_1")
+  categorias             categorias?              @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "productos_ibfk_2")
 
   @@index([stock], map: "idx_producto_stock")
   @@index([proveedor_id], map: "proveedor_id")
+  @@index([categoria_id], map: "categoria_id")
 }
 
 model proveedores {
@@ -184,17 +222,29 @@ model usuarios {
 }
 
 model ventas {
-  id            Int                @id @default(autoincrement())
-  usuario_id    Int
-  total         Decimal            @db.Decimal(10, 2)
-  metodo_pago   ventas_metodo_pago
-  estado        ventas_estado?     @default(COMPLETADA)
-  created_at    DateTime?          @default(now()) @db.Timestamp(0)
-  detalle_venta detalle_venta[]
-  usuarios      usuarios           @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_1")
+  id               Int                 @id @default(autoincrement())
+  usuario_id       Int
+  cliente_id       Int?
+  descuento_id     Int?
+  total            Decimal             @db.Decimal(10, 2)
+  descuento_monto  Decimal?            @default(0.00) @db.Decimal(10, 2)
+  metodo_pago      ventas_metodo_pago?
+  estado           ventas_estado?      @default(COMPLETADA)
+  created_at       DateTime?           @default(now()) @db.Timestamp(0)
+  detalle_venta    detalle_venta[]
+  usuarios         usuarios            @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_1")
+  clientes         clientes?           @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_2")
+  descuentos       descuentos?         @relation(fields: [descuento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_3")
 
   @@index([created_at], map: "idx_venta_fecha")
   @@index([usuario_id], map: "usuario_id")
+  @@index([cliente_id], map: "cliente_id")
+  @@index([descuento_id], map: "descuento_id")
+}
+
+enum descuentos_tipo {
+  PORCENTAJE
+  VALOR_FIJO
 }
 
 enum movimientos_caja_tipo {
@@ -230,24 +280,7 @@ enum caja_estado {
   CERRADA
 }
 
-enum ia_predicciones_nivel_rGET /api/movimientos 304 8.641 ms - -
-BODY: {
-  producto_id: 3,
-  tipo: 'ENTRADA',
-  cantidad: 25,
-  referencia: 'VENTA-1',
-  observacion: 'Venta mostrador'
-}
-Movimiento creado correctamente
-POST /api/movimientos 201 16.862 ms - 166
-BODY: {
-  producto_id: 3,
-  tipo: 'ENTRADA',
-  cantidad: 25,
-  referencia: 'VENTA-1',
-  observacion: 'Venta mostrador'
-}
-Movimiento creado correctamenteiesgo {
+enum ia_predicciones_nivel_riesgo {
   BAJO
   MEDIO
   ALTO

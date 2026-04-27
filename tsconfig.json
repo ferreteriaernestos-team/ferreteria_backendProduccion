@@ -9,7 +9,7 @@
     /* =========================
        ESTRUCTURA DEL PROYECTO
     ========================== */
-   "rootDir": "./",
+   "rootDir": "./src",
     "outDir": "./dist",
 
     /* =========================
@@ -28,6 +28,6 @@
     "forceConsistentCasingInFileNames": true
   },
 
-   "include": ["./src", "./generated"],
+   "include": ["./src"],
   "exclude": ["node_modules"]
 }

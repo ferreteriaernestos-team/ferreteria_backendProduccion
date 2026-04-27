@@ -7,6 +7,8 @@ import { setupSwagger } from "./config/swagger";
 import ventaRoutes from "./routes/venta.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
 import { iniciarMonitorStock } from "./jobs/stock-monitor.job";
+import { iniciarJobAlertasStock } from "./jobs/stockAlert.job";
+import { initializeWhatsappClient } from "./services/whatsapp.service";
 import inventarioRoutes from "./routes/inventario.routes";
 import ordenCompraRoutes from "./routes/orden_compra.routes";
 
@@ -42,7 +44,18 @@ app.use(ROUTE_PATHS.BOX, cajaRoutes);
 app.use(ROUTE_PATHS.REPORTS, reporteRoutes);
 
 app.use("/api/dashboard", dashboardRoutes);
-iniciarMonitorStock();app.use("/api/inventario", inventarioRoutes)
+
+// 🔄 Inicializar jobs automáticos
+iniciarMonitorStock();
+iniciarJobAlertasStock();
+
+// 📱 Inicializar cliente de WhatsApp (con manejo de errores)
+initializeWhatsappClient().catch((error) => {
+  console.error("⚠️ Error inicializando WhatsApp:", error.message);
+  console.log("⚠️ El sistema continuará funcionando, pero no enviará alertas por WhatsApp");
+});
+
+app.use("/api/inventario", inventarioRoutes)
 app.use("/api/proveedores", proveedorRoutes);
 
 app.use("/api/ordenes-compra", ordenCompraRoutes);
