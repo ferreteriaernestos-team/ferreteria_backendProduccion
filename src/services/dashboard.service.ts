@@ -35,15 +35,14 @@ export const getDashboardData = async () => {
     }
   });
 
-  // Productos bajo stock
-  const productosBajoStock = await prisma.productos.count({
-    where: {
-      stock: {
-        lte: prisma.productos.fields.stock_minimo
-      },
-      activo: true
-    }
+  // Productos bajo stock (comparación columna-a-columna)
+  const todosProductos = await prisma.productos.findMany({
+    where: { activo: true },
+    select: { stock: true, stock_minimo: true },
   });
+  const productosBajoStock = todosProductos.filter(
+    (p) => p.stock <= p.stock_minimo
+  ).length;
 
   // Caja abierta
   const cajaAbierta = await prisma.caja.findFirst({

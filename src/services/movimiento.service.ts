@@ -65,6 +65,11 @@ export const crearMovimiento = async (
 export const listarMovimientos = async () => {
   const movimientos = await prisma.movimientos_inventario.findMany({
     orderBy: { created_at: DATABASE.ORDER_BY_DESC },
+    include: {
+      productos: {
+        select: { nombre: true },
+      },
+    },
   });
 
   console.log(LOG_MESSAGES.MOVEMENTS_FOUND, movimientos);

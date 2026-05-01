@@ -1,3 +1,3 @@
-2026/04/27-17:01:16.387 cafd Reusing MANIFEST /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/Sync Data/LevelDB/MANIFEST-000001
-2026/04/27-17:01:16.387 cafd Recovering log #3
-2026/04/27-17:01:16.388 cafd Reusing old log /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/Sync Data/LevelDB/000003.log 
+2026/04/27-18:10:08.077 112e9 Reusing MANIFEST /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/Sync Data/LevelDB/MANIFEST-000001
+2026/04/27-18:10:08.078 112e9 Recovering log #3
+2026/04/27-18:10:08.078 112e9 Reusing old log /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/Sync Data/LevelDB/000003.log 
