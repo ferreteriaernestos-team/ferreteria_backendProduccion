@@ -15,13 +15,33 @@ const router = Router();
  * @swagger
  * /api/ordenes-compra:
  *   get:
- *     summary: Obtener todas las órdenes de compra
+ *     summary: Obtener todas las órdenes de compra (paginado)
  *     tags: [OrdenesCompra]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: estado
+ *         schema:
+ *           type: string
+ *           enum: [PENDIENTE, RECIBIDO]
+ *       - in: query
+ *         name: proveedor_id
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
- *         description: Lista de órdenes de compra
+ *         description: Lista paginada de órdenes de compra
  */
 router.get(
   "/",

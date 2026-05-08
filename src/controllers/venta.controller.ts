@@ -1,11 +1,43 @@
 import { Request, Response } from "express";
 import * as ventaService from "../services/venta.service";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES, LOG_MESSAGES } from "../constants";
-import {
-  CreateSaleRequestDTO,
-  SaleResponseDTO,
-  CancelSaleResponseDTO,
-} from "../dtos";
+import { CreateSaleRequestDTO, SaleResponseDTO, CancelSaleResponseDTO } from "../dtos";
+import { parsePagination, paginatedResponse } from "../utils/pagination";
+
+export const listarVentas = async (req: Request, res: Response) => {
+  try {
+    const { estado, usuario_id, cliente_id, fecha_desde, fecha_hasta } = req.query;
+    const pagination = parsePagination(req.query);
+
+    const { data, total } = await ventaService.listarVentas(
+      {
+        estado: estado as string | undefined,
+        usuario_id: usuario_id ? Number(usuario_id) : undefined,
+        cliente_id: cliente_id ? Number(cliente_id) : undefined,
+        fecha_desde: fecha_desde ? new Date(fecha_desde as string) : undefined,
+        fecha_hasta: fecha_hasta ? new Date(fecha_hasta as string) : undefined,
+      },
+      pagination
+    );
+
+    res.json(paginatedResponse(data, total, pagination.page, pagination.limit));
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getVenta = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const venta = await ventaService.getVentaById(id);
+    if (!venta) {
+      return res.status(404).json({ success: false, message: ERROR_MESSAGES.SALE_NOT_FOUND });
+    }
+    res.json({ success: true, data: venta });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const crearVenta = async (req: Request, res: Response) => {
   try {

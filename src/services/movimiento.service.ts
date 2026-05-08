@@ -62,17 +62,24 @@ export const crearMovimiento = async (
   });
 };
 
-export const listarMovimientos = async () => {
-  const movimientos = await prisma.movimientos_inventario.findMany({
-    orderBy: { created_at: DATABASE.ORDER_BY_DESC },
-    include: {
-      productos: {
-        select: { nombre: true },
-      },
-    },
-  });
+export const listarMovimientos = async (
+  filters?: { tipo?: string; producto_id?: number },
+  pagination?: { page: number; limit: number; skip: number }
+) => {
+  const where = {
+    ...(filters?.tipo && { tipo: filters.tipo as any }),
+    ...(filters?.producto_id && { producto_id: filters.producto_id }),
+  };
 
-  console.log(LOG_MESSAGES.MOVEMENTS_FOUND, movimientos);
+  const [total, data] = await prisma.$transaction([
+    prisma.movimientos_inventario.count({ where }),
+    prisma.movimientos_inventario.findMany({
+      where,
+      orderBy: { created_at: DATABASE.ORDER_BY_DESC },
+      include: { productos: { select: { nombre: true } } },
+      ...(pagination && { skip: pagination.skip, take: pagination.limit }),
+    }),
+  ]);
 
-  return movimientos;
+  return { data, total };
 };

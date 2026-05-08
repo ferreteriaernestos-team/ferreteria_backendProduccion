@@ -1,13 +1,28 @@
 import { prisma } from "../config/prisma";
 
-export const getProveedores = async () => {
+export const getProveedores = async (
+  filters?: { buscar?: string },
+  pagination?: { page: number; limit: number; skip: number }
+) => {
+  const where = {
+    ...(filters?.buscar && {
+      OR: [
+        { nombre: { contains: filters.buscar } },
+        { email: { contains: filters.buscar } },
+      ],
+    }),
+  };
 
-  return prisma.proveedores.findMany({
-    orderBy: {
-      nombre: "asc"
-    }
-  });
+  const [total, data] = await prisma.$transaction([
+    prisma.proveedores.count({ where }),
+    prisma.proveedores.findMany({
+      where,
+      orderBy: { nombre: "asc" },
+      ...(pagination && { skip: pagination.skip, take: pagination.limit }),
+    }),
+  ]);
 
+  return { data, total };
 };
 
 export const getProveedorById = async (id: number) => {

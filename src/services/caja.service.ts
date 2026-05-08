@@ -62,3 +62,19 @@ export const cerrarCaja = async (usuario_id: number) => {
     },
   });
 };
+
+export const getCajaActual = async (usuario_id: number) => {
+  return prisma.caja.findFirst({
+    where: { usuario_id, estado: CAJA_STATES.ABIERTA },
+    include: { movimientos_caja: { orderBy: { created_at: "desc" } } },
+  });
+};
+
+export const getHistorialCajas = async (usuario_id?: number) => {
+  return prisma.caja.findMany({
+    where: usuario_id ? { usuario_id } : undefined,
+    include: { movimientos_caja: true },
+    orderBy: { fecha_apertura: "desc" },
+    take: 50,
+  });
+};

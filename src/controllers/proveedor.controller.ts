@@ -1,23 +1,20 @@
 import { Request, Response } from "express";
 import * as proveedorService from "../services/proveedor.service";
-import { ReportResponseDTO } from "../dtos";
+import { parsePagination, paginatedResponse } from "../utils/pagination";
 
-export const getProveedores = async (_req: Request, res: Response) => {
+export const getProveedores = async (req: Request, res: Response) => {
 
   try {
 
-    const proveedores = await proveedorService.getProveedores();
+    const { buscar } = req.query;
+    const pagination = parsePagination(req.query);
 
-    const response: ReportResponseDTO<any> = {
-      success: true,
-      data: {
-        proveedores,
-        total: proveedores.length
-      },
-      timestamp: new Date()
-    };
+    const { data, total } = await proveedorService.getProveedores(
+      { buscar: buscar as string | undefined },
+      pagination
+    );
 
-    res.json(response);
+    res.json(paginatedResponse(data, total, pagination.page, pagination.limit));
 
   } catch (error: any) {
 

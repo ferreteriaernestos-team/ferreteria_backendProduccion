@@ -16,15 +16,60 @@ const router = Router();
  * @swagger
  * /api/products:
  *   get:
- *     summary: Obtener todos los productos
+ *     summary: Obtener todos los productos (paginado)
+ *     tags: [Productos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: categoria_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: marca
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: inStock
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: buscar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista paginada de productos
+ */
+router.get("/", authMiddleware, productController.getProducts);
+
+/**
+ * @swagger
+ * /api/products/marcas:
+ *   get:
+ *     summary: Obtener listado de marcas disponibles
  *     tags: [Productos]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de productos
+ *         description: Lista de marcas
  */
-router.get("/", authMiddleware, productController.getProducts);
+router.get("/marcas", authMiddleware, productController.getMarcas);
 
 /**
  * @swagger

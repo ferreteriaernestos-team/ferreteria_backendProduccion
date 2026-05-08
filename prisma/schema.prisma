@@ -1,288 +1,363 @@
-generator client {
-  provider = "prisma-client-js"
-}
+  generator client {
+    provider = "prisma-client-js"
+  }
 
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
+  datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+  }
 
-model caja {
-  id               Int                @id @default(autoincrement())
-  usuario_id       Int
-  fecha_apertura   DateTime           @db.DateTime(0)
-  monto_inicial    Decimal            @db.Decimal(10, 2)
-  fecha_cierre     DateTime?          @db.DateTime(0)
-  monto_final      Decimal?           @db.Decimal(10, 2)
-  estado           caja_estado?       @default(ABIERTA)
-  usuarios         usuarios           @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "caja_ibfk_1")
-  movimientos_caja movimientos_caja[]
+  model caja {
+    id               Int                @id @default(autoincrement())
+    usuario_id       Int
+    fecha_apertura   DateTime           @db.DateTime(0)
+    monto_inicial    Decimal            @db.Decimal(10, 2)
+    fecha_cierre     DateTime?          @db.DateTime(0)
+    monto_final      Decimal?           @db.Decimal(10, 2)
+    estado           caja_estado?       @default(ABIERTA)
+    usuarios         usuarios           @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "caja_ibfk_1")
+    movimientos_caja movimientos_caja[]
 
-  @@index([usuario_id], map: "usuario_id")
-}
+    @@index([usuario_id], map: "usuario_id")
+  }
 
-model categorias {
-  id          Int        @id @default(autoincrement())
-  nombre      String     @unique(map: "categorias_nombre") @db.VarChar(100)
-  descripcion String?    @db.Text
-  activo      Boolean?   @default(true)
-  created_at  DateTime?  @default(now()) @db.Timestamp(0)
-  productos   productos[]
-}
+  model categorias {
+    id          Int        @id @default(autoincrement())
+    nombre      String     @unique(map: "categorias_nombre") @db.VarChar(100)
+    descripcion String?    @db.Text
+    activo      Boolean?   @default(true)
+    created_at  DateTime?  @default(now()) @db.Timestamp(0)
+    productos   productos[]
+  }
 
-model clientes {
-  id         Int       @id @default(autoincrement())
-  nombre     String    @db.VarChar(150)
-  documento  String?   @unique(map: "clientes_documento") @db.VarChar(20)
-  telefono   String?   @db.VarChar(20)
-  email      String?   @db.VarChar(100)
-  direccion  String?   @db.Text
-  activo     Boolean?  @default(true)
-  created_at DateTime? @default(now()) @db.Timestamp(0)
-  updated_at DateTime? @default(now()) @db.Timestamp(0)
-  ventas     ventas[]
-}
+  model clientes {
+    id         Int       @id @default(autoincrement())
+    nombre     String    @db.VarChar(150)
+    documento  String?   @unique(map: "clientes_documento") @db.VarChar(20)
+    telefono   String?   @db.VarChar(20)
+    email      String?   @db.VarChar(100)
+    direccion  String?   @db.Text
+    activo     Boolean?  @default(true)
+    created_at DateTime? @default(now()) @db.Timestamp(0)
+    updated_at DateTime? @default(now()) @db.Timestamp(0)
+    ventas    ventas[]
+    pedidos   pedidos[]
+    carritos  carritos[]
+  }
 
-model descuentos {
-  id           Int             @id @default(autoincrement())
-  nombre       String          @db.VarChar(100)
-  tipo         descuentos_tipo
-  valor        Decimal         @db.Decimal(10, 2)
-  activo       Boolean?        @default(true)
-  fecha_inicio DateTime?       @db.Timestamp(0)
-  fecha_fin    DateTime?       @db.Timestamp(0)
-  created_at   DateTime?       @default(now()) @db.Timestamp(0)
-  ventas       ventas[]
-}
+  model descuentos {
+    id           Int             @id @default(autoincrement())
+    nombre       String          @db.VarChar(100)
+    tipo         descuentos_tipo
+    valor        Decimal         @db.Decimal(10, 2)
+    activo       Boolean?        @default(true)
+    fecha_inicio DateTime?       @db.Timestamp(0)
+    fecha_fin    DateTime?       @db.Timestamp(0)
+    created_at   DateTime?       @default(now()) @db.Timestamp(0)
+    ventas       ventas[]
+  }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model detalle_orden_compra {
-  id              Int            @id @default(autoincrement())
-  orden_id        Int
-  producto_id     Int
-  cantidad        Int
-  precio_unitario Decimal        @db.Decimal(10, 2)
-  subtotal        Decimal        @db.Decimal(10, 2)
-  ordenes_compra  ordenes_compra @relation(fields: [orden_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "detalle_orden_compra_ibfk_1")
-  productos       productos      @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "detalle_orden_compra_ibfk_2")
+  /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+  model detalle_orden_compra {
+    id              Int            @id @default(autoincrement())
+    orden_id        Int
+    producto_id     Int
+    cantidad        Int
+    precio_unitario Decimal        @db.Decimal(10, 2)
+    subtotal        Decimal        @db.Decimal(10, 2)
+    ordenes_compra  ordenes_compra @relation(fields: [orden_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "detalle_orden_compra_ibfk_1")
+    productos       productos      @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "detalle_orden_compra_ibfk_2")
 
-  @@index([orden_id], map: "orden_id")
-  @@index([producto_id], map: "producto_id")
-}
+    @@index([orden_id], map: "orden_id")
+    @@index([producto_id], map: "producto_id")
+  }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model detalle_venta {
-  id              Int       @id @default(autoincrement())
-  venta_id        Int
-  producto_id     Int
-  cantidad        Int
-  precio_unitario Decimal   @db.Decimal(10, 2)
-  subtotal        Decimal   @db.Decimal(10, 2)
-  ventas          ventas    @relation(fields: [venta_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "detalle_venta_ibfk_1")
-  productos       productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "detalle_venta_ibfk_2")
+  /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+  model detalle_venta {
+    id              Int       @id @default(autoincrement())
+    venta_id        Int
+    producto_id     Int
+    cantidad        Int
+    precio_unitario Decimal   @db.Decimal(10, 2)
+    subtotal        Decimal   @db.Decimal(10, 2)
+    ventas          ventas    @relation(fields: [venta_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "detalle_venta_ibfk_1")
+    productos       productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "detalle_venta_ibfk_2")
 
-  @@index([producto_id], map: "producto_id")
-  @@index([venta_id], map: "venta_id")
-}
+    @@index([producto_id], map: "producto_id")
+    @@index([venta_id], map: "venta_id")
+  }
 
-model ia_predicciones {
-  id                        Int                          @id @default(autoincrement())
-  producto_id               Int
-  stock_actual              Int
-  consumo_promedio_diario   Decimal                      @db.Decimal(10, 2)
-  dias_restantes_estimados  Int
-  cantidad_sugerida_reorden Int
-  nivel_riesgo              ia_predicciones_nivel_riesgo
-  created_at                DateTime?                    @default(now()) @db.Timestamp(0)
-  productos                 productos                    @relation(fields: [producto_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ia_predicciones_ibfk_1")
+  model ia_predicciones {
+    id                        Int                          @id @default(autoincrement())
+    producto_id               Int
+    stock_actual              Int
+    consumo_promedio_diario   Decimal                      @db.Decimal(10, 2)
+    dias_restantes_estimados  Int
+    cantidad_sugerida_reorden Int
+    nivel_riesgo              ia_predicciones_nivel_riesgo
+    created_at                DateTime?                    @default(now()) @db.Timestamp(0)
+    productos                 productos                    @relation(fields: [producto_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ia_predicciones_ibfk_1")
 
-  @@index([producto_id], map: "producto_id")
-}
+    @@index([producto_id], map: "producto_id")
+  }
 
-model movimientos_caja {
-  id          Int                   @id @default(autoincrement())
-  caja_id     Int
-  tipo        movimientos_caja_tipo
-  monto       Decimal               @db.Decimal(10, 2)
-  descripcion String?               @db.VarChar(255)
-  created_at  DateTime?             @default(now()) @db.Timestamp(0)
-  caja        caja                  @relation(fields: [caja_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "movimientos_caja_ibfk_1")
+  model movimientos_caja {
+    id          Int                   @id @default(autoincrement())
+    caja_id     Int
+    tipo        movimientos_caja_tipo
+    monto       Decimal               @db.Decimal(10, 2)
+    descripcion String?               @db.VarChar(255)
+    created_at  DateTime?             @default(now()) @db.Timestamp(0)
+    caja        caja                  @relation(fields: [caja_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "movimientos_caja_ibfk_1")
 
-  @@index([caja_id], map: "caja_id")
-}
+    @@index([caja_id], map: "caja_id")
+  }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model movimientos_inventario {
-  id          Int                         @id @default(autoincrement())
-  producto_id Int
-  usuario_id  Int
-  tipo        movimientos_inventario_tipo
-  cantidad    Int
-  referencia  String?                     @db.VarChar(100)
-  observacion String?                     @db.Text
-  created_at  DateTime?                   @default(now()) @db.Timestamp(0)
-  productos   productos                   @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "movimientos_inventario_ibfk_1")
-  usuarios    usuarios                    @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "movimientos_inventario_ibfk_2")
+  /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+  model movimientos_inventario {
+    id          Int                         @id @default(autoincrement())
+    producto_id Int
+    usuario_id  Int
+    tipo        movimientos_inventario_tipo
+    cantidad    Int
+    referencia  String?                     @db.VarChar(100)
+    observacion String?                     @db.Text
+    created_at  DateTime?                   @default(now()) @db.Timestamp(0)
+    productos   productos                   @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "movimientos_inventario_ibfk_1")
+    usuarios    usuarios                    @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "movimientos_inventario_ibfk_2")
 
-  @@index([producto_id], map: "idx_movimiento_producto")
-  @@index([usuario_id], map: "usuario_id")
-}
+    @@index([producto_id], map: "idx_movimiento_producto")
+    @@index([usuario_id], map: "usuario_id")
+  }
 
-model ordenes_compra {
-  id                   Int                    @id @default(autoincrement())
-  proveedor_id         Int
-  usuario_id           Int
-  total                Decimal?               @default(0.00) @db.Decimal(10, 2)
-  estado               ordenes_compra_estado? @default(PENDIENTE)
-  created_at           DateTime?              @default(now()) @db.Timestamp(0)
-  detalle_orden_compra detalle_orden_compra[]
-  proveedores          proveedores            @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ordenes_compra_ibfk_1")
-  usuarios             usuarios               @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ordenes_compra_ibfk_2")
+  model ordenes_compra {
+    id                   Int                    @id @default(autoincrement())
+    proveedor_id         Int
+    usuario_id           Int
+    total                Decimal?               @default(0.00) @db.Decimal(10, 2)
+    estado               ordenes_compra_estado? @default(PENDIENTE)
+    created_at           DateTime?              @default(now()) @db.Timestamp(0)
+    detalle_orden_compra detalle_orden_compra[]
+    proveedores          proveedores            @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ordenes_compra_ibfk_1")
+    usuarios             usuarios               @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ordenes_compra_ibfk_2")
 
-  @@index([proveedor_id], map: "proveedor_id")
-  @@index([usuario_id], map: "usuario_id")
-}
+    @@index([proveedor_id], map: "proveedor_id")
+    @@index([usuario_id], map: "usuario_id")
+  }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model productos {
-  id                     Int                      @id @default(autoincrement())
-  nombre                 String                   @db.VarChar(150)
-  descripcion            String?                  @db.Text
-  codigo                 String?                  @unique(map: "codigo") @db.VarChar(50)
-  precio_compra          Decimal                  @db.Decimal(10, 2)
-  precio_venta           Decimal                  @db.Decimal(10, 2)
-  stock                  Int                      @default(0)
-  stock_minimo           Int                      @default(5)
-  proveedor_id           Int?
-  categoria_id           Int?
-  activo                 Boolean?                 @default(true)
-  alerta_enviada         Boolean?                 @default(false)
-  created_at             DateTime?                @default(now()) @db.Timestamp(0)
-  updated_at             DateTime?                @default(now()) @db.Timestamp(0)
-  detalle_orden_compra   detalle_orden_compra[]
-  detalle_venta          detalle_venta[]
-  ia_predicciones        ia_predicciones[]
-  movimientos_inventario movimientos_inventario[]
-  proveedores            proveedores?             @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "productos_ibfk_1")
-  categorias             categorias?              @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "productos_ibfk_2")
+  /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+  model productos {
+    id                     Int                      @id @default(autoincrement())
+    nombre                 String                   @db.VarChar(150)
+    descripcion            String?                  @db.Text
+    codigo                 String?                  @unique(map: "codigo") @db.VarChar(50)
+    precio_compra          Decimal                  @db.Decimal(10, 2)
+    precio_venta           Decimal                  @db.Decimal(10, 2)
+    precio_anterior        Decimal?                 @db.Decimal(10, 2)
+    stock                  Int                      @default(0)
+    stock_minimo           Int                      @default(5)
+    marca                  String?                  @db.VarChar(100)
+    imagen                 String?                  @db.VarChar(500)
+    badge                  String?                  @db.VarChar(50)
+    proveedor_id           Int?
+    categoria_id           Int?
+    activo                 Boolean?                 @default(true)
+    alerta_enviada         Boolean?                 @default(false)
+    created_at             DateTime?                @default(now()) @db.Timestamp(0)
+    updated_at             DateTime?                @default(now()) @db.Timestamp(0)
+    detalle_orden_compra   detalle_orden_compra[]
+    detalle_venta          detalle_venta[]
+    detalle_pedido         detalle_pedido[]
+    carrito_items          carrito_items[]
+    ia_predicciones        ia_predicciones[]
+    movimientos_inventario movimientos_inventario[]
+    proveedores            proveedores?             @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "productos_ibfk_1")
+    categorias             categorias?              @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "productos_ibfk_2")
 
-  @@index([stock], map: "idx_producto_stock")
-  @@index([proveedor_id], map: "proveedor_id")
-  @@index([categoria_id], map: "categoria_id")
-}
+    @@index([stock], map: "idx_producto_stock")
+    @@index([proveedor_id], map: "proveedor_id")
+    @@index([categoria_id], map: "categoria_id")
+  }
 
-model proveedores {
-  id             Int              @id @default(autoincrement())
-  nombre         String           @db.VarChar(150)
-  telefono       String?          @db.VarChar(20)
-  email          String?          @db.VarChar(100)
-  direccion      String?          @db.Text
-  created_at     DateTime?        @default(now()) @db.Timestamp(0)
-  ordenes_compra ordenes_compra[]
-  productos      productos[]
-}
+  model proveedores {
+    id             Int              @id @default(autoincrement())
+    nombre         String           @db.VarChar(150)
+    telefono       String?          @db.VarChar(20)
+    email          String?          @db.VarChar(100)
+    direccion      String?          @db.Text
+    created_at     DateTime?        @default(now()) @db.Timestamp(0)
+    ordenes_compra ordenes_compra[]
+    productos      productos[]
+  }
 
-model refresh_tokens {
-  id         Int       @id @default(autoincrement())
-  usuario_id Int
-  token      String    @db.Text
-  revoked    Boolean?  @default(false)
-  expires_at DateTime  @db.DateTime(0)
-  created_at DateTime? @default(now()) @db.Timestamp(0)
-  usuarios   usuarios  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "refresh_tokens_ibfk_1")
+  model refresh_tokens {
+    id         Int       @id @default(autoincrement())
+    usuario_id Int
+    token      String    @db.Text
+    revoked    Boolean?  @default(false)
+    expires_at DateTime  @db.DateTime(0)
+    created_at DateTime? @default(now()) @db.Timestamp(0)
+    usuarios   usuarios  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "refresh_tokens_ibfk_1")
 
-  @@index([usuario_id], map: "usuario_id")
-}
+    @@index([usuario_id], map: "usuario_id")
+  }
 
-model roles {
-  id          Int        @id @default(autoincrement())
-  nombre      String     @unique(map: "nombre") @db.VarChar(50)
-  descripcion String?    @db.Text
-  created_at  DateTime?  @default(now()) @db.Timestamp(0)
-  usuarios    usuarios[]
-}
+  model roles {
+    id          Int        @id @default(autoincrement())
+    nombre      String     @unique(map: "nombre") @db.VarChar(50)
+    descripcion String?    @db.Text
+    created_at  DateTime?  @default(now()) @db.Timestamp(0)
+    usuarios    usuarios[]
+  }
 
-model usuarios {
-  id                     Int                      @id @default(autoincrement())
-  nombre                 String                   @db.VarChar(100)
-  email                  String                   @unique(map: "email") @db.VarChar(100)
-  password               String                   @db.VarChar(255)
-  rol_id                 Int
-  activo                 Boolean?                 @default(true)
-  created_at             DateTime?                @default(now()) @db.Timestamp(0)
-  updated_at             DateTime?                @default(now()) @db.Timestamp(0)
-  caja                   caja[]
-  movimientos_inventario movimientos_inventario[]
-  ordenes_compra         ordenes_compra[]
-  refresh_tokens         refresh_tokens[]
-  roles                  roles                    @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_ibfk_1")
-  ventas                 ventas[]
+  model usuarios {
+    id                     Int                      @id @default(autoincrement())
+    nombre                 String                   @db.VarChar(100)
+    email                  String                   @unique(map: "email") @db.VarChar(100)
+    password               String                   @db.VarChar(255)
+    rol_id                 Int
+    activo                 Boolean?                 @default(true)
+    created_at             DateTime?                @default(now()) @db.Timestamp(0)
+    updated_at             DateTime?                @default(now()) @db.Timestamp(0)
+    caja                   caja[]
+    movimientos_inventario movimientos_inventario[]
+    ordenes_compra         ordenes_compra[]
+    refresh_tokens         refresh_tokens[]
+    roles                  roles                    @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_ibfk_1")
+    ventas                 ventas[]
 
-  @@index([rol_id], map: "rol_id")
-}
+    @@index([rol_id], map: "rol_id")
+  }
 
-model ventas {
-  id               Int                 @id @default(autoincrement())
-  usuario_id       Int
-  cliente_id       Int?
-  descuento_id     Int?
-  total            Decimal             @db.Decimal(10, 2)
-  descuento_monto  Decimal?            @default(0.00) @db.Decimal(10, 2)
-  metodo_pago      ventas_metodo_pago?
-  estado           ventas_estado?      @default(COMPLETADA)
-  created_at       DateTime?           @default(now()) @db.Timestamp(0)
-  detalle_venta    detalle_venta[]
-  usuarios         usuarios            @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_1")
-  clientes         clientes?           @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_2")
-  descuentos       descuentos?         @relation(fields: [descuento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_3")
+  model ventas {
+    id               Int                 @id @default(autoincrement())
+    usuario_id       Int
+    cliente_id       Int?
+    descuento_id     Int?
+    total            Decimal             @db.Decimal(10, 2)
+    descuento_monto  Decimal?            @default(0.00) @db.Decimal(10, 2)
+    metodo_pago      ventas_metodo_pago?
+    estado           ventas_estado?      @default(COMPLETADA)
+    created_at       DateTime?           @default(now()) @db.Timestamp(0)
+    detalle_venta    detalle_venta[]
+    usuarios         usuarios            @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_1")
+    clientes         clientes?           @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_2")
+    descuentos       descuentos?         @relation(fields: [descuento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ventas_ibfk_3")
 
-  @@index([created_at], map: "idx_venta_fecha")
-  @@index([usuario_id], map: "usuario_id")
-  @@index([cliente_id], map: "cliente_id")
-  @@index([descuento_id], map: "descuento_id")
-}
+    @@index([created_at], map: "idx_venta_fecha")
+    @@index([usuario_id], map: "usuario_id")
+    @@index([cliente_id], map: "cliente_id")
+    @@index([descuento_id], map: "descuento_id")
+  }
 
-enum descuentos_tipo {
-  PORCENTAJE
-  VALOR_FIJO
-}
+  enum descuentos_tipo {
+    PORCENTAJE
+    VALOR_FIJO
+  }
 
-enum movimientos_caja_tipo {
-  INGRESO
-  EGRESO
-}
+  enum movimientos_caja_tipo {
+    INGRESO
+    EGRESO
+  }
 
-enum ventas_metodo_pago {
-  EFECTIVO
-  TARJETA
-  TRANSFERENCIA
-}
+  enum ventas_metodo_pago {
+    EFECTIVO
+    TARJETA
+    TRANSFERENCIA
+  }
 
-enum movimientos_inventario_tipo {
-  ENTRADA
-  SALIDA
-  AJUSTE
-}
+  enum movimientos_inventario_tipo {
+    ENTRADA
+    SALIDA
+    AJUSTE
+  }
 
-enum ordenes_compra_estado {
-  PENDIENTE
-  RECIBIDO
-  CANCELADO
-}
+  enum ordenes_compra_estado {
+    PENDIENTE
+    RECIBIDO
+    CANCELADO
+  }
 
-enum ventas_estado {
-  COMPLETADA
-  CANCELADA
-}
+  enum ventas_estado {
+    COMPLETADA
+    CANCELADA
+  }
 
-enum caja_estado {
-  ABIERTA
-  CERRADA
-}
+  enum caja_estado {
+    ABIERTA
+    CERRADA
+  }
 
-enum ia_predicciones_nivel_riesgo {
-  BAJO
-  MEDIO
-  ALTO
-  CRITICO
-}
+  enum ia_predicciones_nivel_riesgo {
+    BAJO
+    MEDIO
+    ALTO
+    CRITICO
+  }
+
+  model pedidos {
+    id                 Int             @id @default(autoincrement())
+    cliente_id         Int
+    total              Decimal         @db.Decimal(10, 2)
+    estado             pedidos_estado  @default(PENDIENTE_CONFIRMACION)
+    token_confirmacion String          @unique @db.VarChar(64)
+    direccion_entrega  String          @db.Text
+    observaciones      String?         @db.Text
+    expires_at         DateTime        @db.DateTime(0)
+    created_at         DateTime?       @default(now()) @db.Timestamp(0)
+    updated_at         DateTime?       @default(now()) @db.Timestamp(0)
+    clientes           clientes        @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    detalle_pedido     detalle_pedido[]
+
+    @@index([cliente_id])
+    @@index([estado])
+    @@index([expires_at])
+  }
+
+  model detalle_pedido {
+    id              Int       @id @default(autoincrement())
+    pedido_id       Int
+    producto_id     Int
+    cantidad        Int
+    precio_unitario Decimal   @db.Decimal(10, 2)
+    subtotal        Decimal   @db.Decimal(10, 2)
+    pedidos         pedidos   @relation(fields: [pedido_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+    productos       productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+    @@index([pedido_id])
+    @@index([producto_id])
+  }
+
+  enum pedidos_estado {
+    PENDIENTE_CONFIRMACION
+    CONFIRMADO
+    EN_RUTA
+    ENTREGADO
+    CANCELADO
+  }
+  model carritos {
+    id            Int             @id @default(autoincrement())
+    session_id    String          @unique @db.VarChar(64)
+    cliente_id    Int?
+    created_at    DateTime?       @default(now()) @db.Timestamp(0)
+    updated_at    DateTime?       @default(now()) @db.Timestamp(0)
+    clientes      clientes?       @relation(fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+    carrito_items carrito_items[]
+
+    @@index([cliente_id])
+  }
+
+  model carrito_items {
+    id              Int       @id @default(autoincrement())
+    carrito_id      Int
+    producto_id     Int
+    cantidad        Int
+    precio_unitario Decimal   @db.Decimal(10, 2)
+    created_at      DateTime? @default(now()) @db.Timestamp(0)
+    carritos        carritos  @relation(fields: [carrito_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+    productos       productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+    @@unique([carrito_id, producto_id])
+    @@index([carrito_id])
+    @@index([producto_id])
+  }

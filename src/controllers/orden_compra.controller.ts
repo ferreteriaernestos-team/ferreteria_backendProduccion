@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as ordenService from "../services/orden_compra.service";
+import { parsePagination, paginatedResponse } from "../utils/pagination";
 
 export const crearOrdenCompra = async (req: Request, res: Response) => {
 
@@ -29,15 +30,28 @@ export const crearOrdenCompra = async (req: Request, res: Response) => {
 
 };
 
-export const getOrdenesCompra = async (_req: Request, res: Response) => {
+export const getOrdenesCompra = async (req: Request, res: Response) => {
 
-  const ordenes = await ordenService.getOrdenesCompra();
+  try {
 
-  res.json({
-    success: true,
-    data: ordenes,
-    timestamp: new Date()
-  });
+    const { estado, proveedor_id } = req.query;
+    const pagination = parsePagination(req.query);
+
+    const { data, total } = await ordenService.getOrdenesCompra(
+      {
+        estado: estado as string | undefined,
+        proveedor_id: proveedor_id ? Number(proveedor_id) : undefined,
+      },
+      pagination
+    );
+
+    res.json(paginatedResponse(data, total, pagination.page, pagination.limit));
+
+  } catch (error: any) {
+
+    res.status(500).json({ success: false, message: error.message });
+
+  }
 
 };
 

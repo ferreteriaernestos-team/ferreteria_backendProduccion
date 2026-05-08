@@ -183,3 +183,62 @@ export const cancelarVenta = async (
     return { message: SUCCESS_MESSAGES.SALE_CANCELLED };
   });
 };
+
+export const listarVentas = async (
+  filters?: {
+    estado?: string;
+    usuario_id?: number;
+    cliente_id?: number;
+    fecha_desde?: Date;
+    fecha_hasta?: Date;
+  },
+  pagination?: { page: number; limit: number; skip: number }
+) => {
+  const where = {
+    ...(filters?.estado && { estado: filters.estado as any }),
+    ...(filters?.usuario_id && { usuario_id: filters.usuario_id }),
+    ...(filters?.cliente_id && { cliente_id: filters.cliente_id }),
+    ...(filters?.fecha_desde || filters?.fecha_hasta
+      ? {
+          created_at: {
+            ...(filters?.fecha_desde && { gte: filters.fecha_desde }),
+            ...(filters?.fecha_hasta && { lte: filters.fecha_hasta }),
+          },
+        }
+      : {}),
+  };
+
+  const include = {
+    usuarios: { select: { id: true, nombre: true } },
+    clientes: { select: { id: true, nombre: true, documento: true } },
+    detalle_venta: {
+      include: {
+        productos: { select: { id: true, nombre: true, codigo: true } },
+      },
+    },
+  };
+
+  const [total, data] = await prisma.$transaction([
+    prisma.ventas.count({ where }),
+    prisma.ventas.findMany({
+      where,
+      include,
+      orderBy: { created_at: "desc" },
+      ...(pagination && { skip: pagination.skip, take: pagination.limit }),
+    }),
+  ]);
+
+  return { data, total };
+};
+
+export const getVentaById = async (id: number) => {
+  return prisma.ventas.findUnique({
+    where: { id },
+    include: {
+      usuarios: { select: { id: true, nombre: true } },
+      clientes: true,
+      descuentos: true,
+      detalle_venta: { include: { productos: true } },
+    },
+  });
+};

@@ -116,10 +116,33 @@ router.post("/", authMiddleware, movimientoController.crearMovimiento);
  * @swagger
  * /api/movimientos:
  *   get:
- *     summary: Listar movimientos
+ *     summary: Listar movimientos de inventario (paginado)
  *     tags: [Movimientos]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: tipo
+ *         schema:
+ *           type: string
+ *           enum: [ENTRADA, SALIDA, AJUSTE]
+ *       - in: query
+ *         name: producto_id
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista paginada de movimientos
  */
 router.get("/", authMiddleware, movimientoController.listarMovimientos);
 

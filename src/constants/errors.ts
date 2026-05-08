@@ -34,6 +34,15 @@ export const ERROR_MESSAGES = {
   INVALID_QUANTITY: "Cantidad inválida",
   INVALID_ID: "ID inválido",
   
+  // Categoria errors
+  CATEGORY_NOT_FOUND: "Categoría no encontrada",
+
+  // Cliente errors
+  CLIENT_NOT_FOUND: "Cliente no encontrado",
+
+  // Descuento errors
+  DISCOUNT_NOT_FOUND: "Descuento no encontrado",
+
   // General errors
   ERROR_REGISTERING_MOVEMENT: "Error al registrar movimiento",
   ERROR_FETCHING_MOVEMENTS: "Error al obtener movimientos",

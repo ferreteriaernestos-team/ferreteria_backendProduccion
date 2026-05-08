@@ -36,17 +36,26 @@ export const crearOrdenCompra = async (data: any, usuario_id: number) => {
   return orden;
 };
 
-export const getOrdenesCompra = async () => {
+export const getOrdenesCompra = async (
+  filters?: { estado?: string; proveedor_id?: number },
+  pagination?: { page: number; limit: number; skip: number }
+) => {
+  const where = {
+    ...(filters?.estado && { estado: filters.estado as any }),
+    ...(filters?.proveedor_id && { proveedor_id: filters.proveedor_id }),
+  };
 
-  return prisma.ordenes_compra.findMany({
-    include: {
-      proveedores: true
-    },
-    orderBy: {
-      created_at: "desc"
-    }
-  });
+  const [total, data] = await prisma.$transaction([
+    prisma.ordenes_compra.count({ where }),
+    prisma.ordenes_compra.findMany({
+      where,
+      include: { proveedores: true },
+      orderBy: { created_at: "desc" },
+      ...(pagination && { skip: pagination.skip, take: pagination.limit }),
+    }),
+  ]);
 
+  return { data, total };
 };
 
 export const getOrdenCompraById = async (id: number) => {

@@ -15,13 +15,29 @@ const router = Router();
  * @swagger
  * /api/proveedores:
  *   get:
- *     summary: Obtener todos los proveedores
+ *     summary: Obtener todos los proveedores (paginado)
  *     tags: [Proveedores]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: buscar
+ *         schema:
+ *           type: string
+ *         description: Buscar por nombre o email
  *     responses:
  *       200:
- *         description: Lista de proveedores
+ *         description: Lista paginada de proveedores
  */
 router.get(
   "/",

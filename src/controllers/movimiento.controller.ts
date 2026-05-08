@@ -4,9 +4,9 @@ import { ERROR_MESSAGES, SUCCESS_MESSAGES, LOG_MESSAGES } from "../constants";
 import {
   CreateMovementRequestDTO,
   CreateMovementResponseDTO,
-  MovementListResponseDTO,
   MovementResponseDTO,
 } from "../dtos";
+import { parsePagination, paginatedResponse } from "../utils/pagination";
 
 export const crearMovimiento = async (req: Request, res: Response) => {
   try {
@@ -44,17 +44,18 @@ export const crearMovimiento = async (req: Request, res: Response) => {
 
 export const listarMovimientos = async (req: Request, res: Response) => {
   try {
-    const movimientos = await movimientoService.listarMovimientos();
+    const { tipo, producto_id } = req.query;
+    const pagination = parsePagination(req.query);
 
-    const response: MovementListResponseDTO = {
-      movimientos: movimientos as any[],
-      total: movimientos.length,
-    };
+    const { data, total } = await movimientoService.listarMovimientos(
+      {
+        tipo: tipo as string | undefined,
+        producto_id: producto_id ? Number(producto_id) : undefined,
+      },
+      pagination
+    );
 
-    return res.status(200).json({
-      success: true,
-      data: response,
-    });
+    return res.status(200).json(paginatedResponse(data, total, pagination.page, pagination.limit));
   } catch (error: any) {
     console.error(LOG_MESSAGES.ERROR_LISTING_MOVEMENTS, error);
 

@@ -7,6 +7,25 @@ import {
   CloseBoxResponseDTO,
 } from "../dtos";
 
+export const getCajaEstado = async (req: Request, res: Response) => {
+  try {
+    const usuario = (req as any).user;
+    const caja = await cajaService.getCajaActual(usuario.id);
+    res.json({ success: true, data: caja, abierta: !!caja });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getHistorialCajas = async (req: Request, res: Response) => {
+  try {
+    const cajas = await cajaService.getHistorialCajas();
+    res.json({ success: true, data: cajas, total: cajas.length });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const abrirCaja = async (req: Request, res: Response) => {
   try {
     const usuario = (req as any).user;

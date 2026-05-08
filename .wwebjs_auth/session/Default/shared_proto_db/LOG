@@ -1,3 +1,4 @@
-2026/04/27-18:10:08.129 112f4 Reusing MANIFEST /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/shared_proto_db/MANIFEST-000001
-2026/04/27-18:10:08.129 112f4 Recovering log #3
-2026/04/27-18:10:08.129 112f4 Reusing old log /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/shared_proto_db/000003.log 
+2026/05/07-18:02:30.969 a913 Reusing MANIFEST /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/shared_proto_db/MANIFEST-000001
+2026/05/07-18:02:30.969 a913 Recovering log #3
+2026/05/07-18:02:30.970 a913 (ignoring error) /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/shared_proto_db/000003.log: dropping 225 bytes; Corruption: missing start of fragmented record(2)
+2026/05/07-18:02:30.970 a913 Reusing old log /home/nova/Desktop/backend-ferreteria/.wwebjs_auth/session/Default/shared_proto_db/000003.log 

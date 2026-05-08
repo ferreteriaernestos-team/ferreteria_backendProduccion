@@ -160,13 +160,27 @@ export const enviarWhatsApp = async (message: string): Promise<boolean> => {
   return sendWhatsappMessage(adminPhone, message);
 };
 
-// ─── Chatbot de consulta de stock ─────────────────────────────────────────────
+// ─── Chatbot ──────────────────────────────────────────────────────────────────
 
 async function handleIncomingMessage(message: Message): Promise<void> {
   const body = message.body.trim().toLowerCase();
+  // Extraer número limpio del remitente (ej: "50372880187@c.us" → "50372880187")
+  const senderPhone = message.from.replace("@c.us", "");
 
   if (body === "ping") {
     await message.reply("pong 🏓");
+    return;
+  }
+
+  // Confirmación de pedido por el cliente
+  if (body === "si" || body === "sí" || body === "confirmar" || body === "confirmo") {
+    await handleConfirmacionPedido(message, senderPhone, true);
+    return;
+  }
+
+  // Cancelación de pedido por el cliente
+  if (body === "no" || body === "cancelar" || body === "cancelo") {
+    await handleConfirmacionPedido(message, senderPhone, false);
     return;
   }
 
@@ -178,11 +192,54 @@ async function handleIncomingMessage(message: Message): Promise<void> {
   if (body === "ayuda" || body === "help" || body === "hola") {
     await message.reply(
       `👋 *Bot Ferretería - Comandos disponibles:*\n\n` +
+        `✅ *SI* — Confirmar tu pedido pendiente\n` +
+        `❌ *NO* — Cancelar tu pedido pendiente\n` +
         `📦 *stock* — Ver productos con stock bajo\n` +
         `❓ *ayuda* — Mostrar esta ayuda\n\n` +
         `_Sistema de gestión de ferretería_`
     );
     return;
+  }
+}
+
+async function handleConfirmacionPedido(
+  message: Message,
+  senderPhone: string,
+  confirmar: boolean
+): Promise<void> {
+  try {
+    // Import dinámico para evitar dependencia circular
+    const { buscarPedidoPendientePorTelefono, confirmarPedido, cancelarPedido } =
+      await import("./pedido.service");
+
+    const pedido = await buscarPedidoPendientePorTelefono(senderPhone);
+
+    if (!pedido) {
+      await message.reply(
+        "ℹ️ No tienes ningún pedido pendiente de confirmación en este momento."
+      );
+      return;
+    }
+
+    if (confirmar) {
+      await confirmarPedido(pedido.id);
+      await message.reply(
+        `✅ *Pedido #${pedido.id} confirmado*\n\n` +
+          `Gracias por confirmar. Procesaremos tu pedido y te avisaremos cuando esté en camino.\n` +
+          `💰 Recuerda tener el pago listo: *$${Number(pedido.total).toFixed(2)}* en efectivo.\n\n` +
+          `_Ferretería_`
+      );
+    } else {
+      await cancelarPedido(pedido.id);
+      await message.reply(
+        `❌ *Pedido #${pedido.id} cancelado*\n\n` +
+          `Tu pedido fue cancelado. Si fue un error, puedes hacer un nuevo pedido desde nuestra tienda.\n\n` +
+          `_Ferretería_`
+      );
+    }
+  } catch (error: any) {
+    console.error("❌ [Chatbot] Error procesando confirmación:", error);
+    await message.reply(`❌ ${error.message || "Error al procesar tu respuesta. Intenta de nuevo."}`);
   }
 }
 
